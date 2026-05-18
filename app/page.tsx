@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase"; // Ensure this matches your directory structure
 import {
   motion,
   AnimatePresence,
@@ -9,8 +10,6 @@ import {
 } from "framer-motion";
 import {
   FiArrowRight,
-  FiCode,
-  FiZap,
   FiTerminal,
   FiAward,
   FiBookOpen,
@@ -27,130 +26,20 @@ import {
   FiCheckCircle,
 } from "react-icons/fi";
 
-// ==========================================
-//   AUTHENTIC PROFILE DATA (EASY TO EDIT)
-// ==========================================
-const PROFILE = {
-  name: "Dhairya Agrawal",
-  college: "Newton School of Technology x S-VYASA",
-  timelineStart: "August 2026",
-  bio: "Hi! I'm Dhairya, a student web developer passionate about writing code and exploring how things work behind the screen. I started teaching myself programming and have learned how to build clean, responsive websites using JavaScript, React, and Next.js. I'm not a veteran expert yet, but I love building personal projects, figuring out bugs, and constantly expanding what I know. Right now, I am getting ready to start my B.Tech journey in August 2026!",
-  // 🌟 Update this URL to point to your real photo file path or static asset!
-  photoUrl:
-    "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=600&auto=format&fit=crop",
-};
-
-const JOURNEY_TIMELINE = [
-  {
-    period: "2010 - 2026",
-    role: "Schooling Student",
-    institution: "Aryan International School",
-    description:
-      "Built strong foundational roots in math and science. Outside of classes, I fell down the programming rabbit hole—teaching myself how web browsers render code, studying basic scripting, and building my very first static web pages.",
-    type: "school",
-  },
-  {
-    period: "August 2026",
-    role: "B.Tech in Computer Science & Systems Engineering",
-    institution: "Newton School of Technology x S-VYASA",
-    description:
-      "The official start of my campus college chapter! I will be studying core data structures, advanced full-stack software loops, and collaborating with fellow student developers.",
-    type: "college",
-  },
-  {
-    period: "Jan 2027 - May 2027 (Goal Node)",
-    role: "First Target Internship",
-    institution: "Tech Industry Placement",
-    description:
-      "My personal timeline target to secure a student internship, work inside a real engineering environment, and learn how production code is deployed at scale.",
-    type: "internship",
-  },
-];
-
-const MILESTONES = [
-  {
-    title: "First Hackathon Build",
-    award: "Participant & Project Submitter",
-    description:
-      "Joined a fast-paced coding competition with other developers. We collaborated under a strict timeline to build and present a functional website application.",
-    tag: "Hackathon",
-  },
-  {
-    title: "School Technology Fest",
-    award: "Web Coding Winner",
-    description:
-      "Earned a top spot at a regional student science/tech event by demonstrating an original front-end design platform layout built from scratch.",
-    tag: "School Fest",
-  },
-  {
-    title: "15+ Personal Projects Coded",
-    award: "Self-Driven Progress",
-    description:
-      "Successfully assembled and launched multiple small responsive web projects, simple calculators, API trackers, and layout clones to test my skills.",
-    tag: "Learning Milestone",
-  },
-];
-
-const TECH_INVENTORY = [
-  {
-    name: "HTML5 & CSS3 Layouts",
-    status: "Comfortable & Confident",
-    barWidth: "95%",
-  },
-  {
-    name: "JavaScript (ES6+ basics)",
-    status: "Comfortable / Active Projects",
-    barWidth: "80%",
-  },
-  {
-    name: "React.js Component Architecture",
-    status: "Still Learning & Implementing",
-    barWidth: "75%",
-  },
-  {
-    name: "Next.js Framework basics",
-    status: "Still Learning & Implementing",
-    barWidth: "65%",
-  },
-  {
-    name: "Python Coding / Basic Scripts",
-    status: "Familiar / Basic Tasks",
-    barWidth: "55%",
-  },
-];
-
-const REAL_PROJECTS = [
-  {
-    title: "Personal Portfolio v1",
-    desc: "The exact website you are looking at right now. Built to showcase my timeline track record, clean UI animations, and authentic coding skillset.",
-    tech: ["Next.js", "React", "Tailwind CSS", "Framer Motion"],
-    gitUrl: "https://github.com",
-  },
-  {
-    title: "Dynamic Responsive Landing Node",
-    desc: "A fully optimized, mobile-first product page mockup featuring CSS grid structures, hover transitions, and clean dark theme visual properties.",
-    tech: ["HTML5", "CSS3", "JavaScript"],
-    gitUrl: "https://github.com",
-  },
-  {
-    title: "Interactive Client Utility Widget",
-    desc: "A small web utility app designed to let users interact with real-time state array updates and input modifications inside a web dashboard.",
-    tech: ["JavaScript", "React.js", "CSS Modules"],
-    gitUrl: "https://github.com",
-  },
-];
-
 export default function AuthenticStudentPortfolio() {
   const [showLoader, setShowLoader] = useState(true);
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<
-    "journey" | "milestones" | "skills" | string
-  >("journey");
-
-  // Custom Name Photo Hover State Matrices
+  const [activeTab, setActiveTab] = useState<string>("journey");
   const [isNameHovered, setIsNameHovered] = useState(false);
 
-  // Contact form state
+  // 1. STATE DRIVERS FOR DYNAMIC REPOSITORIES
+  const [profile, setProfile] = useState<any>(null);
+  const [journey, setJourney] = useState<any[]>([]);
+  const [milestones, setMilestones] = useState<any[]>([]);
+  const [techInventory, setTechInventory] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
+
+  // Form input bindings
   const [formState, setFormState] = useState({
     name: "",
     email: "",
@@ -158,7 +47,7 @@ export default function AuthenticStudentPortfolio() {
   });
   const [submitted, setSubmitted] = useState(false);
 
-  // 1. SMART CUSTOM MOUSE SPARK TRACKER
+  // 2. MOUSE SPARK CONFIGURATIONS
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
   const springConfig = { stiffness: 400, damping: 28 };
@@ -166,14 +55,56 @@ export default function AuthenticStudentPortfolio() {
   const cursorYSpring = useSpring(cursorY, springConfig);
   const [isHoveredClickable, setIsHoveredClickable] = useState(false);
 
+  // 3. ASYNC LIVE DATA STREAM FETCH LOOP
   useEffect(() => {
     setMounted(true);
-    const timer = setTimeout(() => setShowLoader(false), 2400);
+
+    const fetchPortfolioData = async () => {
+      try {
+        // Fetch profile metrics (Get the single first entry row)
+        const { data: profileData } = await supabase
+          .from("profile")
+          .select("*")
+          .maybeSingle();
+        if (profileData) setProfile(profileData);
+
+        // Fetch journey logs ordered by sorting weights
+        const { data: journeyData } = await supabase
+          .from("journey_timeline")
+          .select("*")
+          .order("sort_order", { ascending: true });
+        if (journeyData) setJourney(journeyData);
+
+        // Fetch milestone listings
+        const { data: milestoneData } = await supabase
+          .from("milestones")
+          .select("*");
+        if (milestoneData) setMilestones(milestoneData);
+
+        // Fetch skills grid index maps
+        const { data: skillData } = await supabase
+          .from("tech_inventory")
+          .select("*")
+          .order("sort_order", { ascending: true });
+        if (skillData) setTechInventory(skillData);
+
+        // Fetch projects nodes
+        const { data: projectData } = await supabase
+          .from("real_projects")
+          .select("*");
+        if (projectData) setProjects(projectData);
+      } catch (err) {
+        console.error("Critical stream pipeline crash:", err);
+      } finally {
+        setShowLoader(false);
+      }
+    };
+
+    fetchPortfolioData();
 
     const moveCursor = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
-
       const target = e.target as HTMLElement;
       const isClickable = target.closest(
         'a, button, [role="button"], input, textarea, .hover-trigger-name',
@@ -182,27 +113,52 @@ export default function AuthenticStudentPortfolio() {
     };
 
     window.addEventListener("mousemove", moveCursor);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener("mousemove", moveCursor);
-    };
+    return () => window.removeEventListener("mousemove", moveCursor);
   }, []);
 
-  const triggerSubmitHandshake = (e: React.FormEvent) => {
+  // 4. SECURE PAYLOAD HANDSHAKE TRANSMISSION
+  const triggerSubmitHandshake = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formState.name || !formState.email || !formState.message) return;
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormState({ name: "", email: "", message: "" });
-    }, 4000);
+
+    try {
+      const { error } = await supabase
+        .from("contacts")
+        .insert([
+          {
+            name: formState.name,
+            email: formState.email,
+            message: formState.message,
+          },
+        ]);
+
+      if (error) throw error;
+
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormState({ name: "", email: "", message: "" });
+      }, 4000);
+    } catch (err) {
+      console.error("Form delivery abort fault:", err);
+      alert("Submission error encountered.");
+    }
   };
 
   if (!mounted) return <div className="min-h-screen bg-[#030712]" />;
 
+  // Dynamic fallback strings while resource loading completes
+  const profileName = profile?.name || "Dhairya Agrawal";
+  const profileBio = profile?.bio || "Loading ecosystem profiles...";
+  const profileCollege = profile?.college || "Newton School of Technology";
+  const profileStart = profile?.timeline_start || "August 2026";
+  const profilePhoto =
+    profile?.photo_url ||
+    "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=600&auto=format&fit=crop";
+
   return (
     <div className="min-h-screen bg-[#030712] text-white selection:bg-[#6C63FF]/30 overflow-x-hidden font-sans relative antialiased scroll-smooth">
-      {/* 🟢 CUSTOM CURSOR GLOW DOT */}
+      {/* GLOWING AMBIENT DOT */}
       <motion.div
         className="hidden md:block fixed top-0 left-0 w-8 h-8 rounded-full pointer-events-none z-[9999] border border-[#6C63FF]/50 mixed-blend-difference"
         style={{
@@ -216,7 +172,7 @@ export default function AuthenticStudentPortfolio() {
         }}
       />
 
-      {/* 🪐 DYNAMIC CURSOR-FOLLOWING IMAGE POPUP */}
+      {/* DYNAMIC CURSOR HOVER IMAGE WINDOW */}
       <AnimatePresence>
         {isNameHovered && (
           <motion.div
@@ -228,22 +184,21 @@ export default function AuthenticStudentPortfolio() {
             style={{
               x: cursorXSpring,
               y: cursorYSpring,
-              // Offsets the picture slightly upper-right of the pointer path
-              marginLeft: "10px",
+              marginLeft: "50px",
               marginTop: "-160px",
             }}
           >
             <img
-              src={PROFILE.photoUrl}
-              alt={PROFILE.name}
-              className="w-full h-full object-cover animate-fade-in"
+              src={profilePhoto}
+              alt={profileName}
+              className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* 🪐 TECH WEBPAGE GLITCH INTRO LOADER SCREEN */}
+      {/* INTRO GLITCH LOADER */}
       <AnimatePresence>
         {showLoader && (
           <motion.div
@@ -257,17 +212,12 @@ export default function AuthenticStudentPortfolio() {
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: "160px" }}
-                transition={{ duration: 1.2, ease: "easeInOut" }}
+                transition={{ duration: 1.2 }}
                 className="h-[2px] bg-gradient-to-r from-[#6C63FF] to-[#4FD1C5] mx-auto"
               />
-              <motion.h2
-                initial={{ opacity: 0, letterSpacing: "0.2em" }}
-                animate={{ opacity: 1, letterSpacing: "0.5em" }}
-                transition={{ duration: 1 }}
-                className="text-white font-black uppercase text-xs pl-[0.5em]"
-              >
-                {PROFILE.name}
-              </motion.h2>
+              <h2 className="text-white font-black uppercase text-xs tracking-widest">
+                {profileName}
+              </h2>
               <div className="text-[10px] text-[#4FD1C5] tracking-widest animate-pulse mt-1">
                 INITIALIZING PORTFOLIO_NODE...
               </div>
@@ -276,179 +226,110 @@ export default function AuthenticStudentPortfolio() {
         )}
       </AnimatePresence>
 
-      {/* PREMIUM CYBERGRID METRIC LINES OVERLAY */}
+      {/* GRID VECTOR ACCENTS */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none z-0" />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-[600px] bg-gradient-to-b from-[#6C63FF]/15 via-[#4FD1C5]/5 to-transparent blur-[140px] pointer-events-none z-0" />
 
-      {/* NAVIGATION BAR */}
+      {/* HEADER SECTION */}
       <nav className="fixed top-0 inset-x-0 h-16 bg-[#030712]/75 backdrop-blur-md border-b border-white/[0.04] z-50">
         <div className="max-w-5xl mx-auto h-full px-4 sm:px-6 flex items-center justify-between">
           <a href="#about" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#6C63FF] to-[#4FD1C5] flex items-center justify-center font-black text-xs shadow-lg group-hover:rotate-6 transition-transform">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#6C63FF] to-[#4FD1C5] flex items-center justify-center font-black text-xs group-hover:rotate-6 transition-transform">
               DA
             </div>
             <div>
               <span className="font-bold text-sm block tracking-tight group-hover:text-[#4FD1C5] transition-colors">
-                {PROFILE.name}
+                {profileName}
               </span>
               <span className="text-[9px] text-gray-500 tracking-widest uppercase font-mono block mt-0.5">
-                Student Portfolio
+                Dynamic Web-Node
               </span>
             </div>
           </a>
-
-          <div className="hidden md:flex items-center gap-6 text-[11px] font-bold font-mono text-gray-400">
-            <a
-              href="#about"
-              className="hover:text-white transition-colors relative group py-1"
-            >
-              /about
-            </a>
-            <a
-              href="#dashboard"
-              className="hover:text-white transition-colors relative group py-1"
-            >
-              /dashboard
-            </a>
-            <a
-              href="#projects"
-              className="hover:text-white transition-colors relative group py-1"
-            >
-              /projects
-            </a>
-            <a
-              href="#contact"
-              className="hover:text-white transition-colors relative group py-1"
-            >
-              /contact
-            </a>
-          </div>
-
           <div className="bg-white/[0.02] border border-white/5 px-3 py-1 rounded-lg flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-[#4FD1C5] animate-pulse" />
             <span className="text-[10px] font-mono text-[#4FD1C5] font-bold uppercase tracking-wider">
-              CAMPUS INBOUND: 2026
+              CAMPUS INBOUND: {profileStart}
             </span>
           </div>
         </div>
       </nav>
 
-      {/* HERO SECTION WITH LUXURY HOVER TRIGGERS */}
+      {/* MAIN HERO LANDING PORT */}
       <section
         id="about"
-        className="pt-40 pb-20 px-4 sm:px-6 max-w-4xl mx-auto text-center space-y-8 relative z-10 min-h-[90vh] flex flex-col justify-center items-center"
+        className="pt-40 pb-20 px-4 max-w-4xl mx-auto text-center space-y-8 relative z-10 min-h-[90vh] flex flex-col justify-center items-center"
       >
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2.5, duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-3 py-1 bg-[#6C63FF]/10 border border-[#6C63FF]/20 rounded-full text-[10px] font-mono font-bold tracking-wider text-[#818cf8]"
-        >
-          <FiTerminal size={11} /> Learning & Coding Active Loop
-        </motion.div>
-
-        <div className="space-y-4">
-          <h1 className="text-4xl sm:text-6xl font-black tracking-tight leading-[1.05]">
-            <motion.span
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 2.6, duration: 0.6 }}
-              className="block select-none"
-            >
-              Hi, I'm{" "}
-              <span
-                onMouseEnter={() => setIsNameHovered(true)}
-                onMouseLeave={() => setIsNameHovered(false)}
-                className="hover-trigger-name relative text-white hover:text-[#4FD1C5] transition-colors cursor-crosshair border-b-2 border-dashed border-white/20 hover:border-[#4FD1C5]"
-              >
-                {PROFILE.name}
-              </span>
-              .
-            </motion.span>
-            <motion.span
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 2.8, duration: 0.6 }}
-              className="bg-gradient-to-r from-[#6C63FF] via-[#818cf8] to-[#4FD1C5] bg-clip-text text-transparent block mt-1"
-            >
-              Exploring Code & Web Architecture.
-            </motion.span>
-          </h1>
+        <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#6C63FF]/10 border border-[#6C63FF]/20 rounded-full text-[10px] font-mono font-bold tracking-wider text-[#818cf8]">
+          <FiTerminal size={11} /> Live Runtime Ecosystem Verified
         </div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 3, duration: 0.8 }}
-          className="text-sm sm:text-base text-gray-400 leading-relaxed max-w-2xl font-normal font-sans"
-        >
-          {PROFILE.bio}
-        </motion.p>
+        <h1 className="text-4xl sm:text-6xl font-black tracking-tight leading-[1.05]">
+          <span className="block">
+            Hi, I'm{" "}
+            <span
+              onMouseEnter={() => setIsNameHovered(true)}
+              onMouseLeave={() => setIsNameHovered(false)}
+              className="hover-trigger-name text-white hover:text-[#4FD1C5] cursor-crosshair border-b-2 border-dashed border-white/20 transition-colors"
+            >
+              {profileName}
+            </span>
+            .
+          </span>
+          <span className="bg-gradient-to-r from-[#6C63FF] via-[#818cf8] to-[#4FD1C5] bg-clip-text text-transparent block mt-1">
+            Exploring Code & Web Architecture.
+          </span>
+        </h1>
 
-        {/* Academic Target Card */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 3.2, duration: 0.5 }}
-          className="p-4 bg-[#090d16] border border-white/[0.04] hover:border-[#6C63FF]/20 rounded-xl text-left max-w-xl w-full flex items-start gap-3 shadow-xl hover:shadow-[#6C63FF]/5 transition-all duration-300"
-        >
-          <div className="p-2 rounded-lg bg-[#4FD1C5]/10 text-[#4FD1C5] mt-0.5 shrink-0">
+        <p className="text-sm sm:text-base text-gray-400 leading-relaxed max-w-2xl font-normal">
+          {profileBio}
+        </p>
+
+        {/* Academic Card */}
+        <div className="p-4 bg-[#090d16] border border-white/[0.04] rounded-xl text-left max-w-xl w-full flex items-start gap-3 shadow-xl">
+          <div className="p-2 rounded-lg bg-[#4FD1C5]/10 text-[#4FD1C5] mt-0.5">
             <FiBookOpen size={15} />
           </div>
           <div className="text-xs">
             <span className="font-mono font-bold text-gray-500 uppercase tracking-wide text-[10px] block">
-              Future Campus Destination
+              Academic Destination Node
             </span>
-            <p className="text-gray-300 mt-0.5 leading-relaxed font-sans">
+            <p className="text-gray-300 mt-0.5">
               Incoming B.Tech Undergrad student at{" "}
-              <span className="text-white font-bold">{PROFILE.college}</span>{" "}
+              <span className="text-white font-bold">{profileCollege}</span>{" "}
               starting in{" "}
               <span className="text-amber-400 font-mono font-bold">
-                {PROFILE.timelineStart}
+                {profileStart}
               </span>
               .
             </p>
           </div>
-        </motion.div>
+        </div>
 
-        {/* Scroll Indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 3.4 }}
-          className="flex items-center gap-4 pt-2 font-mono text-xs"
-        >
+        <div className="flex items-center gap-4 pt-2 font-mono text-xs">
           <a
             href="#dashboard"
-            className="h-11 px-5 rounded-xl bg-[#6C63FF] hover:bg-[#5a52f5] text-white font-bold tracking-wide flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#6C63FF]/20"
+            className="h-11 px-5 rounded-xl bg-[#6C63FF] text-white font-bold tracking-wide flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-[#6C63FF]/20"
           >
             <span>Explore Matrix Timeline</span> <FiArrowRight size={12} />
           </a>
-        </motion.div>
+        </div>
       </section>
 
-      {/* TRACK RECORD INTERACTIVE CONTROL TABS */}
+      {/* DASHBOARD SECTIONS */}
       <section
         id="dashboard"
-        className="py-24 max-w-4xl mx-auto px-4 sm:px-6 border-t border-white/[0.03] relative z-10"
+        className="py-24 max-w-4xl mx-auto px-4 border-t border-white/[0.03] relative z-10"
       >
         <div className="flex justify-center mb-12">
           <div className="p-1 bg-[#090d16] border border-white/5 rounded-xl flex gap-1 font-mono max-w-sm w-full shadow-2xl">
-            {[
-              { id: "journey", text: "Journey" },
-              { id: "milestones", text: "Milestones" },
-              { id: "skills", text: "Tech Grid" },
-            ].map((tab) => (
+            {["journey", "milestones", "skills"].map((tab) => (
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 py-2 text-[11px] font-bold rounded-lg uppercase tracking-wider transition-all duration-200 cursor-pointer ${
-                  activeTab === tab.id
-                    ? "bg-[#6C63FF] text-white shadow-md"
-                    : "text-gray-400 hover:text-white"
-                }`}
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex-1 py-2 text-[11px] font-bold rounded-lg uppercase tracking-wider transition-all ${activeTab === tab ? "bg-[#6C63FF] text-white" : "text-gray-400 hover:text-white"}`}
               >
-                {tab.text}
+                {tab === "skills" ? "Tech Grid" : tab}
               </button>
             ))}
           </div>
@@ -464,14 +345,14 @@ export default function AuthenticStudentPortfolio() {
                 exit={{ opacity: 0, y: -15 }}
                 className="relative border-l border-white/10 ml-2 md:ml-28 space-y-6 text-left"
               >
-                {JOURNEY_TIMELINE.map((node, idx) => (
-                  <div key={idx} className="relative pl-6 group">
-                    <div className="absolute -left-[5px] top-2.5 w-2.5 h-2.5 rounded-full bg-[#030712] border-2 border-[#6C63FF] group-hover:border-[#4FD1C5] transition-colors duration-300" />
+                {journey.map((node, idx) => (
+                  <div key={node.id || idx} className="relative pl-6 group">
+                    <div className="absolute -left-[5px] top-2.5 w-2.5 h-2.5 rounded-full bg-[#030712] border-2 border-[#6C63FF] group-hover:border-[#4FD1C5] transition-colors" />
                     <div className="md:absolute md:-left-32 md:top-1.5 md:w-24 text-left md:text-right text-[10px] font-mono font-bold text-[#4FD1C5] uppercase tracking-wider mb-1 md:mb-0">
                       {node.period}
                     </div>
-                    <div className="p-5 bg-[#090d16] border border-white/[0.04] rounded-xl hover:border-[#6C63FF]/30 transition-all duration-300 shadow-xl group-hover:translate-x-1">
-                      <div className="flex items-center gap-2 text-[#818cf8] text-[9px] font-mono font-bold uppercase tracking-wider">
+                    <div className="p-5 bg-[#090d16] border border-white/[0.04] rounded-xl transition-all shadow-xl group-hover:translate-x-1">
+                      <div className="flex items-center gap-2 text-[#818cf8] text-[9px] font-mono font-bold uppercase">
                         <FiBriefcase size={11} /> <span>// {node.type}</span>
                       </div>
                       <h3 className="text-base font-bold text-white tracking-tight mt-1">
@@ -480,7 +361,7 @@ export default function AuthenticStudentPortfolio() {
                       <span className="text-xs font-mono font-bold text-gray-500 block mt-0.5">
                         {node.institution}
                       </span>
-                      <p className="text-xs text-gray-400 mt-3 leading-relaxed font-sans font-normal">
+                      <p className="text-xs text-gray-400 mt-3 leading-relaxed">
                         {node.description}
                       </p>
                     </div>
@@ -497,13 +378,13 @@ export default function AuthenticStudentPortfolio() {
                 exit={{ opacity: 0, scale: 0.98 }}
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-left"
               >
-                {MILESTONES.map((mile, idx) => (
+                {milestones.map((mile, idx) => (
                   <div
-                    key={idx}
-                    className="p-5 bg-[#090d16] border border-white/[0.04] rounded-xl flex flex-col justify-between hover:border-[#4FD1C5]/30 transition-all duration-300 shadow-xl hover:-translate-y-1 group"
+                    key={mile.id || idx}
+                    className="p-5 bg-[#090d16] border border-white/[0.04] rounded-xl flex flex-col justify-between shadow-xl hover:-translate-y-1 group transition-all"
                   >
                     <div className="space-y-3">
-                      <div className="w-7 h-7 rounded-lg bg-amber-400/10 text-amber-400 border border-amber-400/20 flex items-center justify-center text-xs group-hover:scale-110 transition-transform">
+                      <div className="w-7 h-7 rounded-lg bg-amber-400/10 text-amber-400 border border-amber-400/20 flex items-center justify-center text-xs">
                         <FiAward />
                       </div>
                       <div>
@@ -514,7 +395,7 @@ export default function AuthenticStudentPortfolio() {
                           {mile.title}
                         </h4>
                       </div>
-                      <p className="text-xs text-gray-400 leading-relaxed font-sans font-normal">
+                      <p className="text-xs text-gray-400 leading-relaxed">
                         {mile.description}
                       </p>
                     </div>
@@ -539,8 +420,8 @@ export default function AuthenticStudentPortfolio() {
                     // Level Baseline Checklist
                   </span>
                   <div className="space-y-4 font-mono text-xs">
-                    {TECH_INVENTORY.map((skill, idx) => (
-                      <div key={idx} className="space-y-1.5">
+                    {techInventory.map((skill, idx) => (
+                      <div key={skill.id || idx} className="space-y-1.5">
                         <div className="flex justify-between items-center text-[11px]">
                           <span className="font-bold text-gray-200">
                             {skill.name}
@@ -552,8 +433,8 @@ export default function AuthenticStudentPortfolio() {
                         <div className="h-[6px] w-full bg-black/40 rounded-full overflow-hidden border border-white/[0.02]">
                           <motion.div
                             initial={{ width: 0 }}
-                            animate={{ width: skill.barWidth }}
-                            transition={{ duration: 1, ease: "circOut" }}
+                            animate={{ width: skill.bar_width }}
+                            transition={{ duration: 1 }}
                             className="h-full bg-gradient-to-r from-[#6C63FF] to-[#4FD1C5]"
                           />
                         </div>
@@ -567,12 +448,12 @@ export default function AuthenticStudentPortfolio() {
         </div>
       </section>
 
-      {/* PROJECTS BLOCK */}
+      {/* DYNAMIC CODE PROJECTS REPOSITORIES */}
       <section
         id="projects"
-        className="py-24 max-w-5xl mx-auto px-4 sm:px-6 border-t border-white/[0.03] relative z-10"
+        className="py-24 max-w-5xl mx-auto px-4 border-t border-white/[0.03] relative z-10"
       >
-        <div className="text-center space-y-2 mb-12 max-w-md mx-auto">
+        <div className="text-center space-y-2 mb-12">
           <span className="text-xs font-bold font-mono tracking-widest text-[#4FD1C5] uppercase block">
             / repositories
           </span>
@@ -581,19 +462,18 @@ export default function AuthenticStudentPortfolio() {
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 text-left">
-          {REAL_PROJECTS.map((proj, idx) => (
+          {projects.map((proj, idx) => (
             <div
-              key={idx}
-              className="p-5 bg-[#090d16] border border-white/[0.04] hover:border-[#6C63FF]/40 rounded-xl flex flex-col justify-between transition-all duration-300 group shadow-lg hover:shadow-[#6C63FF]/5 hover:-translate-y-1 relative overflow-hidden"
+              key={proj.id || idx}
+              className="p-5 bg-[#090d16] border border-white/[0.04] hover:border-[#6C63FF]/40 rounded-xl flex flex-col justify-between transition-all group shadow-lg hover:-translate-y-1 relative overflow-hidden"
             >
-              <div className="absolute -top-12 -right-12 w-24 h-24 bg-[#6C63FF]/10 rounded-full blur-xl" />
-              <div className="space-y-4 relative z-10">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="p-2 rounded-lg bg-white/[0.02] border border-white/5 text-gray-500 group-hover:text-[#4FD1C5] transition-all">
                     <FiFolder size={15} />
                   </div>
                   <a
-                    href={proj.gitUrl}
+                    href={proj.git_url}
                     target="_blank"
                     rel="noreferrer"
                     className="text-gray-500 hover:text-white transition-colors text-xs flex items-center gap-1 font-mono font-bold"
@@ -605,30 +485,31 @@ export default function AuthenticStudentPortfolio() {
                   <h3 className="text-sm font-bold text-white tracking-tight group-hover:text-[#6C63FF] transition-colors">
                     {proj.title}
                   </h3>
-                  <p className="text-xs text-gray-400 leading-relaxed mt-1.5 font-sans font-normal">
-                    {proj.desc}
+                  <p className="text-xs text-gray-400 leading-relaxed mt-1.5">
+                    {proj.description}
                   </p>
                 </div>
               </div>
               <div className="mt-6 pt-3 border-t border-white/[0.03] flex flex-wrap gap-1 font-mono text-[9px] font-semibold text-gray-400 relative z-10">
-                {proj.tech.map((t, i) => (
-                  <span
-                    key={i}
-                    className="bg-white/[0.02] border border-white/5 px-2 py-0.5 rounded text-gray-300"
-                  >
-                    {t}
-                  </span>
-                ))}
+                {Array.isArray(proj.tech) &&
+                  proj.tech.map((t: string, i: number) => (
+                    <span
+                      key={i}
+                      className="bg-white/[0.02] border border-white/5 px-2 py-0.5 rounded text-gray-300"
+                    >
+                      {t}
+                    </span>
+                  ))}
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* HANDSHAKE CONTACT FORM INTERFACE */}
+      {/* CONTACT FORM */}
       <section
         id="contact"
-        className="py-24 max-w-xl mx-auto px-4 sm:px-6 border-t border-white/[0.03] relative z-10 text-center"
+        className="py-24 max-w-xl mx-auto px-4 border-t border-white/[0.03] relative z-10 text-center"
       >
         <div className="space-y-2 mb-10">
           <span className="text-xs font-bold font-mono tracking-widest text-[#4FD1C5] uppercase block">
@@ -687,12 +568,12 @@ export default function AuthenticStudentPortfolio() {
                   setFormState({ ...formState, message: e.target.value })
                 }
                 placeholder="Write your note sequence here..."
-                className="w-full bg-black/30 border border-white/5 focus:border-[#6C63FF] rounded-xl p-4 text-white focus:outline-none font-sans resize-none tool-scrollbar"
+                className="w-full bg-black/30 border border-white/5 focus:border-[#6C63FF] rounded-xl p-4 text-white focus:outline-none font-sans resize-none"
               />
             </div>
             <button
               type="submit"
-              className="w-full h-11 bg-[#6C63FF] hover:bg-[#5a52f5] text-white font-bold tracking-wider uppercase rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-[0.99] shadow-lg cursor-pointer"
+              className="w-full h-11 bg-[#6C63FF] text-white font-bold tracking-wider uppercase rounded-xl flex items-center justify-center gap-1.5 hover:bg-[#5a52f5] active:scale-[0.99] transition-all shadow-lg cursor-pointer"
             >
               <FiMessageSquare size={13} /> <span>Transmit Payload</span>
             </button>
@@ -718,78 +599,16 @@ export default function AuthenticStudentPortfolio() {
         </div>
       </section>
 
-      {/* SOCIAL MEDIA NETWORKING FOOTPRINT */}
-      <section className="py-14 border-t border-white/[0.02] max-w-5xl mx-auto px-4 text-center space-y-5 relative z-10">
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 font-mono">
-          {[
-            {
-              name: "GitHub",
-              url: "https://github.com",
-              icon: <FiGithub />,
-              hoverColor:
-                "hover:border-white/20 hover:text-white hover:bg-white/[0.02]",
-            },
-            {
-              name: "LinkedIn",
-              url: "https://linkedin.com",
-              icon: <FiLinkedin />,
-              hoverColor:
-                "hover:border-blue-500/20 hover:text-blue-400 hover:bg-blue-500/[0.02]",
-            },
-            {
-              name: "Twitter",
-              url: "https://x.com",
-              icon: <FiTwitter />,
-              hoverColor:
-                "hover:border-slate-400/20 hover:text-slate-200 hover:bg-slate-400/[0.02]",
-            },
-            {
-              name: "Instagram",
-              url: "https://instagram.com",
-              icon: <FiInstagram />,
-              hoverColor:
-                "hover:border-pink-500/20 hover:text-pink-400 hover:bg-pink-500/[0.02]",
-            },
-            {
-              name: "YouTube",
-              url: "https://youtube.com",
-              icon: <FiYoutube />,
-              hoverColor:
-                "hover:border-red-500/20 hover:text-red-400 hover:bg-red-500/[0.02]",
-            },
-          ].map((soc, idx) => (
-            <a
-              key={idx}
-              href={soc.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`p-3 bg-[#090d16] border border-white/[0.04] rounded-xl flex items-center justify-center gap-2 transition-all duration-300 group cursor-pointer ${soc.hoverColor}`}
-            >
-              <div className="text-xs text-gray-500 group-hover:scale-110 transition-transform">
-                {soc.icon}
-              </div>
-              <span className="text-xs font-bold text-gray-400 group-hover:text-white">
-                {soc.name}
-              </span>
-            </a>
-          ))}
-        </div>
-      </section>
-
       {/* FOOTER */}
-      <footer className="border-t border-white/[0.04] bg-[#030712] py-8 text-center sm:text-left relative z-10">
+      <footer className="border-t border-white/[0.04] bg-[#030712] py-8 text-center relative z-10">
         <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-gray-500">
           <div>
             <span className="font-bold text-white block">
-              {PROFILE.name} — Personal Node
-            </span>
-            <span className="text-[10px] mt-0.5 block">
-              Configured with Next.js 15 App Layout structures, Tailwind, and
-              Framer Motion.
+              {profileName} — Live Synchronized Core
             </span>
           </div>
           <span className="text-[10px] font-bold tracking-wider text-gray-600 uppercase">
-            LOCAL_BUILD // 2026
+            DATABASE_ACTIVE // 2026
           </span>
         </div>
       </footer>
