@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase"; // Ensure this matches your directory structure
+import { supabase } from "@/lib/supabase";
 import {
   motion,
   AnimatePresence,
@@ -15,7 +15,6 @@ import {
   FiBookOpen,
   FiBriefcase,
   FiFolder,
-  FiMail,
   FiMessageSquare,
   FiTrendingUp,
   FiGithub,
@@ -25,6 +24,28 @@ import {
   FiYoutube,
   FiCheckCircle,
 } from "react-icons/fi";
+
+// Static definitions for your primary routing links
+const SOCIAL_LINKS = [
+  {
+    name: "GitHub",
+    url: "https://github.com/dhairya2009",
+    icon: <FiGithub size={16} />,
+    hoverColor: "hover:text-[#4FD1C5]",
+  },
+  {
+    name: "LinkedIn",
+    url: "https://www.linkedin.com/in/dhairya-agarwal-566282211/",
+    icon: <FiLinkedin size={16} />,
+    hoverColor: "hover:text-[#6C63FF]",
+  },
+  {
+    name: "Instagram",
+    url: "https://www.instagram.com/dhairyaagrawal199/",
+    icon: <FiInstagram size={16} />,
+    hoverColor: "hover:text-[#f43f5e]",
+  },
+];
 
 export default function AuthenticStudentPortfolio() {
   const [showLoader, setShowLoader] = useState(true);
@@ -47,12 +68,15 @@ export default function AuthenticStudentPortfolio() {
   });
   const [submitted, setSubmitted] = useState(false);
 
-  // 2. MOUSE SPARK CONFIGURATIONS
+  // 2. MAGNETIC ADVANCED CURSOR STATE CONFIGURATIONS
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
-  const springConfig = { stiffness: 400, damping: 28 };
-  const cursorXSpring = useSpring(cursorX, springConfig);
-  const cursorYSpring = useSpring(cursorY, springConfig);
+
+  // Spring configurations for the delayed trailing outer ring element
+  const trailingConfig = { stiffness: 250, damping: 24 };
+  const cursorXSpring = useSpring(cursorX, trailingConfig);
+  const cursorYSpring = useSpring(cursorY, trailingConfig);
+
   const [isHoveredClickable, setIsHoveredClickable] = useState(false);
 
   // 3. ASYNC LIVE DATA STREAM FETCH LOOP
@@ -61,34 +85,29 @@ export default function AuthenticStudentPortfolio() {
 
     const fetchPortfolioData = async () => {
       try {
-        // Fetch profile metrics (Get the single first entry row)
         const { data: profileData } = await supabase
           .from("profile")
           .select("*")
           .maybeSingle();
         if (profileData) setProfile(profileData);
 
-        // Fetch journey logs ordered by sorting weights
         const { data: journeyData } = await supabase
           .from("journey_timeline")
           .select("*")
           .order("sort_order", { ascending: true });
         if (journeyData) setJourney(journeyData);
 
-        // Fetch milestone listings
         const { data: milestoneData } = await supabase
           .from("milestones")
           .select("*");
         if (milestoneData) setMilestones(milestoneData);
 
-        // Fetch skills grid index maps
         const { data: skillData } = await supabase
           .from("tech_inventory")
           .select("*")
           .order("sort_order", { ascending: true });
         if (skillData) setTechInventory(skillData);
 
-        // Fetch projects nodes
         const { data: projectData } = await supabase
           .from("real_projects")
           .select("*");
@@ -107,7 +126,7 @@ export default function AuthenticStudentPortfolio() {
       cursorY.set(e.clientY);
       const target = e.target as HTMLElement;
       const isClickable = target.closest(
-        'a, button, [role="button"], input, textarea, .hover-trigger-name',
+        'a, button, [role="button"], input, textarea, .hover-trigger-name, json-node',
       );
       setIsHoveredClickable(!!isClickable);
     };
@@ -122,15 +141,13 @@ export default function AuthenticStudentPortfolio() {
     if (!formState.name || !formState.email || !formState.message) return;
 
     try {
-      const { error } = await supabase
-        .from("contacts")
-        .insert([
-          {
-            name: formState.name,
-            email: formState.email,
-            message: formState.message,
-          },
-        ]);
+      const { error } = await supabase.from("contacts").insert([
+        {
+          name: formState.name,
+          email: formState.email,
+          message: formState.message,
+        },
+      ]);
 
       if (error) throw error;
 
@@ -152,23 +169,43 @@ export default function AuthenticStudentPortfolio() {
   const profileBio = profile?.bio || "Loading ecosystem profiles...";
   const profileCollege = profile?.college || "Newton School of Technology";
   const profileStart = profile?.timeline_start || "August 2026";
-  const profilePhoto =
-    profile?.photo_url ||
-    "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=600&auto=format&fit=crop";
+  const profilePhoto = profile?.photo_url;
 
   return (
     <div className="min-h-screen bg-[#030712] text-white selection:bg-[#6C63FF]/30 overflow-x-hidden font-sans relative antialiased scroll-smooth">
-      {/* GLOWING AMBIENT DOT */}
+      {/* ========================================================= */}
+      {/* PREMIUM INDUSTRIAL DUAL CURSOR ANIMATION ENGINE           */}
+      {/* ========================================================= */}
+      {/* 1. Precise Core Point Dot (Instantaneous alignment) */}
       <motion.div
-        className="hidden md:block fixed top-0 left-0 w-8 h-8 rounded-full pointer-events-none z-[9999] border border-[#6C63FF]/50 mixed-blend-difference"
+        className="hidden md:block fixed top-0 left-0 w-2 h-2 rounded-full pointer-events-none z-[99999] bg-[#4FD1C5]"
+        style={{
+          x: cursorX,
+          y: cursorY,
+          transform: "translate(-50%, -50%)",
+        }}
+      />
+      {/* 2. Inertial Trailing Outer Ring (Delayed Spring Mechanics) */}
+      <motion.div
+        className="hidden md:block fixed top-0 left-0 rounded-full pointer-events-none z-[9999] border border-[#6C63FF]/60 bg-transparent mix-blend-screen"
+        animate={{
+          width: isHoveredClickable ? 52 : 28,
+          height: isHoveredClickable ? 52 : 28,
+          borderColor: isHoveredClickable
+            ? "rgba(79, 209, 197, 0.8)"
+            : "rgba(108, 99, 255, 0.4)",
+          backgroundColor: isHoveredClickable
+            ? "rgba(108, 99, 255, 0.08)"
+            : "rgba(0, 0, 0, 0)",
+          boxShadow: isHoveredClickable
+            ? "0px 0px 16px rgba(79, 209, 197, 0.3)"
+            : "none",
+        }}
+        transition={{ type: "tween", ease: "easeOut", duration: 0.2 }}
         style={{
           x: cursorXSpring,
           y: cursorYSpring,
           transform: "translate(-50%, -50%)",
-          backgroundColor: isHoveredClickable
-            ? "rgba(108, 99, 255, 0.2)"
-            : "rgba(79, 209, 197, 0.03)",
-          scale: isHoveredClickable ? 1.5 : 1,
         }}
       />
 
@@ -188,11 +225,13 @@ export default function AuthenticStudentPortfolio() {
               marginTop: "-160px",
             }}
           >
-            <img
-              src={profilePhoto}
-              alt={profileName}
-              className="w-full h-full object-cover"
-            />
+            {profilePhoto && (
+              <img
+                src={profilePhoto}
+                alt={profileName}
+                className="w-full h-full object-cover"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
           </motion.div>
         )}
@@ -230,6 +269,34 @@ export default function AuthenticStudentPortfolio() {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none z-0" />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-[600px] bg-gradient-to-b from-[#6C63FF]/15 via-[#4FD1C5]/5 to-transparent blur-[140px] pointer-events-none z-0" />
 
+      {/* ========================================================= */}
+      {/* FIXED LATERAL SOCIAL MEDIA DOCK (DESKTOP & LAPTOP FOCUS)  */}
+      {/* ========================================================= */}
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 1, duration: 0.6 }}
+        className="hidden lg:flex fixed left-6 xl:left-10 bottom-0 flex-col items-center gap-5 z-40"
+      >
+        <div className="flex flex-col gap-4 bg-[#090d16]/40 backdrop-blur-md p-2.5 rounded-full border border-white/[0.03] shadow-2xl">
+          {SOCIAL_LINKS.map((soc, idx) => (
+            <a
+              key={idx}
+              href={soc.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`w-9 h-9 rounded-full flex items-center justify-center text-gray-400 bg-[#030712]/60 border border-white/[0.04] transition-all duration-300 group ${soc.hoverColor}`}
+            >
+              <motion.div whileHover={{ scale: 1.15, rotate: 6 }}>
+                {soc.icon}
+              </motion.div>
+            </a>
+          ))}
+        </div>
+        {/* Vector terminal alignment wire line */}
+        <div className="w-[1px] h-24 bg-gradient-to-b from-white/20 to-transparent" />
+      </motion.div>
+
       {/* HEADER SECTION */}
       <nav className="fixed top-0 inset-x-0 h-16 bg-[#030712]/75 backdrop-blur-md border-b border-white/[0.04] z-50">
         <div className="max-w-5xl mx-auto h-full px-4 sm:px-6 flex items-center justify-between">
@@ -246,10 +313,10 @@ export default function AuthenticStudentPortfolio() {
               </span>
             </div>
           </a>
-          <div className="bg-white/[0.02] border border-white/5 px-3 py-1 rounded-lg flex items-center gap-2">
+          <div className="bg-white/[0.02] border border-white/5 px-3 py-1 rounded-lg hidden md:flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-[#4FD1C5] animate-pulse" />
             <span className="text-[10px] font-mono text-[#4FD1C5] font-bold uppercase tracking-wider">
-              CAMPUS INBOUND: {profileStart}
+              COLLAGE START : {profileStart}
             </span>
           </div>
         </div>
@@ -306,13 +373,38 @@ export default function AuthenticStudentPortfolio() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4 pt-2 font-mono text-xs">
+        {/* Action Array Links Wrapper */}
+        <div className="flex flex-col items-center gap-6 pt-2 w-full max-w-md">
           <a
             href="#dashboard"
-            className="h-11 px-5 rounded-xl bg-[#6C63FF] text-white font-bold tracking-wide flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-[#6C63FF]/20"
+            className="h-11 px-6 rounded-xl bg-[#6C63FF] text-white font-mono text-xs font-bold tracking-wide flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-[#6C63FF]/20 group"
           >
-            <span>Explore Matrix Timeline</span> <FiArrowRight size={12} />
+            <span>EXPLORE MATRIX TIMELINE</span>
+            <FiArrowRight
+              size={12}
+              className="group-hover:translate-x-1 transition-transform"
+            />
           </a>
+
+          {/* ========================================================= */}
+          {/* RESPONSIVE SOCIAL BAR GRID NODE (IPAD & MOBILE VIEWS)      */}
+          {/* ========================================================= */}
+          <div className="flex lg:hidden items-center justify-center gap-3 w-full px-4">
+            {SOCIAL_LINKS.map((soc, idx) => (
+              <a
+                key={idx}
+                href={soc.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 max-w-[110px] h-10 bg-[#090d16] border border-white/[0.04] rounded-xl flex items-center justify-center gap-2 transition-all duration-300 active:scale-95 text-gray-400 hover:text-white"
+              >
+                <div className="text-gray-500">{soc.icon}</div>
+                <span className="text-[10px] font-mono font-bold tracking-tight uppercase">
+                  {soc.name.substring(0, 4)}
+                </span>
+              </a>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -410,37 +502,70 @@ export default function AuthenticStudentPortfolio() {
             {activeTab === "skills" && (
               <motion.div
                 key="skills"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="space-y-4 text-left max-w-xl mx-auto"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="space-y-6 text-left max-w-3xl mx-auto"
               >
-                <div className="bg-[#090d16] border border-white/[0.04] rounded-xl p-6 space-y-4 shadow-2xl">
-                  <span className="text-[10px] font-mono font-bold text-[#4FD1C5] uppercase tracking-widest block border-b border-white/[0.04] pb-2">
-                    // Level Baseline Checklist
+                {/* DASHBOARD STATUS HEADER */}
+                <div className="flex justify-between items-center px-2 font-mono text-[10px] text-gray-500 uppercase tracking-widest">
+                  <span>
+                    // INVENTORY_LOGS // {techInventory.length} MODULES DETECTED
                   </span>
-                  <div className="space-y-4 font-mono text-xs">
-                    {techInventory.map((skill, idx) => (
-                      <div key={skill.id || idx} className="space-y-1.5">
-                        <div className="flex justify-between items-center text-[11px]">
-                          <span className="font-bold text-gray-200">
-                            {skill.name}
-                          </span>
-                          <span className="text-gray-500 font-bold text-[10px]">
+                  <span className="text-[#4FD1C5] animate-pulse">
+                    SYSTEM_STABLE
+                  </span>
+                </div>
+
+                {/* MODERN TWO-COLUMN INTERACTIVE SKILLS GRID */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {techInventory.map((skill, idx) => (
+                    <motion.div
+                      key={skill.id || idx}
+                      whileHover={{ scale: 1.01, translateY: -2 }}
+                      className="bg-[#090d16] border border-white/[0.03] hover:border-[#6C63FF]/30 rounded-xl p-5 shadow-xl transition-all duration-300 relative overflow-hidden group flex flex-col justify-between"
+                    >
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#6C63FF]/5 to-transparent rounded-bl-full pointer-events-none group-hover:from-[#4FD1C5]/10 transition-all duration-500" />
+
+                      <div className="space-y-3 relative z-10">
+                        <div className="flex justify-between items-start gap-3">
+                          <div className="space-y-1">
+                            <span className="text-[9px] font-mono font-bold text-gray-500 tracking-wider uppercase block">
+                              MODULE_0{idx + 1}
+                            </span>
+                            <h4 className="text-sm font-bold text-white tracking-tight group-hover:text-[#4FD1C5] transition-colors duration-300">
+                              {skill.name}
+                            </h4>
+                          </div>
+
+                          <span className="text-[9px] font-mono font-black tracking-wide bg-white/[0.02] border border-white/5 group-hover:border-[#6C63FF]/20 text-gray-400 group-hover:text-[#818cf8] px-2 py-0.5 rounded transition-all duration-300 uppercase shrink-0">
                             {skill.status}
                           </span>
                         </div>
-                        <div className="h-[6px] w-full bg-black/40 rounded-full overflow-hidden border border-white/[0.02]">
+                      </div>
+
+                      <div className="mt-5 space-y-1.5 relative z-10">
+                        <div className="h-[5px] w-full bg-black/50 rounded-full overflow-hidden p-[1px] border border-white/[0.02]">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: skill.bar_width }}
-                            transition={{ duration: 1 }}
-                            className="h-full bg-gradient-to-r from-[#6C63FF] to-[#4FD1C5]"
-                          />
+                            transition={{ duration: 1.2, ease: "circOut" }}
+                            className="h-full bg-gradient-to-r from-[#6C63FF] via-[#818cf8] to-[#4FD1C5] rounded-full relative"
+                          >
+                            <div className="absolute right-0 top-0 bottom-0 w-1 bg-white blur-[1px] animate-pulse" />
+                          </motion.div>
+                        </div>
+
+                        <div className="flex justify-between items-center text-[9px] font-mono font-bold text-gray-600 group-hover:text-gray-400 transition-colors duration-300">
+                          <span>BUFF_STATE: COMPILING</span>
+                          <span className="text-[#4FD1C5]">
+                            {skill.bar_width}
+                          </span>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </motion.div>
+                  ))}
                 </div>
               </motion.div>
             )}
@@ -541,9 +666,7 @@ export default function AuthenticStudentPortfolio() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-gray-500 font-bold block">
-                  Email Target Route:
-                </label>
+                <label className="text-gray-500 font-bold block">Email :</label>
                 <input
                   type="email"
                   required
@@ -608,7 +731,7 @@ export default function AuthenticStudentPortfolio() {
             </span>
           </div>
           <span className="text-[10px] font-bold tracking-wider text-gray-600 uppercase">
-            DATABASE_ACTIVE // 2026
+            DATABASE_ACTIVE // {new Date().getFullYear()}
           </span>
         </div>
       </footer>
