@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { Analytics } from "@vercel/analytics/next";
 import {
   motion,
   AnimatePresence,
@@ -280,6 +281,7 @@ export default function AuthenticStudentPortfolio() {
 
   return (
     <div className="min-h-screen bg-[#030712] text-white selection:bg-[#6C63FF]/30 overflow-x-hidden font-sans relative antialiased scroll-smooth">
+      <Analytics />
       {/* PRECISE CORE DOT */}
       <motion.div
         className="hidden md:block fixed top-0 left-0 w-2 h-2 rounded-full pointer-events-none z-[99999] bg-[#4FD1C5]"
