@@ -162,7 +162,7 @@ function ProjectCard({ proj, idx }: { proj: any; idx: number }) {
 // =========================================================
 // MAIN PORTFOLIO MODULE EXPORT
 // =========================================================
-export default function AuthenticStudentPortfolio() {
+export default function page() {
   const [showLoader, setShowLoader] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("journey");
@@ -492,9 +492,6 @@ export default function AuthenticStudentPortfolio() {
                 className="flex-1 max-w-[110px] h-10 bg-[#090d16] border border-white/[0.04] rounded-xl flex items-center justify-center gap-2 transition-all duration-300 active:scale-95 text-gray-400 hover:text-white"
               >
                 <div className="text-gray-500">{soc.icon}</div>
-                <span className="text-[10px] font-mono font-bold tracking-tight uppercase">
-                  {soc.name.substring(0, 4)}
-                </span>
               </a>
             ))}
           </div>
