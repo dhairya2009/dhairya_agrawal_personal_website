@@ -21,7 +21,6 @@ import {
   FiLinkedin,
   FiTwitter,
   FiInstagram,
-  FiYoutube,
   FiCheckCircle,
 } from "react-icons/fi";
 
@@ -47,20 +46,120 @@ const SOCIAL_LINKS = [
   },
 ];
 
+// =========================================================
+// NEW DETACHED HOOK SAFE COMPONENT FOR 3D CARDS
+// =========================================================
+function ProjectCard({ proj, idx }: { proj: any; idx: number }) {
+  const xRotate = useMotionValue(0);
+  const yRotate = useMotionValue(0);
+  const radialGlowBg = useMotionValue(
+    "radial-gradient(circle at 50% 50%, rgba(108, 99, 255, 0) 0%, transparent 70%)",
+  );
+
+  const handleMouseTilt = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    const rect = el.getBoundingClientRect();
+
+    const width = rect.width;
+    const height = rect.height;
+
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const xPct = mouseX / width - 0.5;
+    const yPct = mouseY / height - 0.5;
+
+    xRotate.set(yPct * -10);
+    yRotate.set(xPct * 10);
+
+    radialGlowBg.set(
+      `radial-gradient(circle at ${mouseX}px ${mouseY}px, rgba(79, 209, 197, 0.09) 0%, rgba(108, 99, 255, 0.03) 45%, transparent 80%)`,
+    );
+  };
+
+  const handleMouseReset = () => {
+    xRotate.set(0);
+    yRotate.set(0);
+    radialGlowBg.set(
+      "radial-gradient(circle at 50% 50%, rgba(108, 99, 255, 0) 0%, transparent 70%)",
+    );
+  };
+
+  const springConfig = { stiffness: 180, damping: 20 };
+  const xRotSpring = useSpring(xRotate, springConfig);
+  const yRotSpring = useSpring(yRotate, springConfig);
+
+  return (
+    <div style={{ perspective: 1000 }} className="relative">
+      <motion.div
+        onMouseMove={handleMouseTilt}
+        onMouseLeave={handleMouseReset}
+        style={{
+          rotateX: xRotSpring,
+          rotateY: yRotSpring,
+          background: radialGlowBg,
+        }}
+        whileHover={{ y: -4 }}
+        className="p-5 bg-[#090d16] border border-white/[0.04] hover:border-[#6C63FF]/35 rounded-xl flex flex-col justify-between transition-colors duration-300 group shadow-lg relative overflow-hidden h-full transform-gpu select-none"
+      >
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-[linear-gradient(to_right,#ffffff01_1px,transparent_1px),linear-gradient(to_bottom,#ffffff01_1px,transparent_1px)] bg-[size:16px_16px] transition-opacity duration-500 pointer-events-none z-0" />
+
+        <div className="space-y-4 relative z-10 pointer-events-none">
+          <div className="flex items-center justify-between pointer-events-auto">
+            <div className="p-2 rounded-lg bg-white/[0.02] border border-white/5 text-gray-500 group-hover:text-[#4FD1C5] transition-all duration-300">
+              <FiFolder size={15} />
+            </div>
+            <a
+              href={proj.git_url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-gray-500 hover:text-white transition-colors text-xs flex items-center gap-1 font-mono font-bold"
+            >
+              <FiGithub size={13} /> <span>Code Base</span>
+            </a>
+          </div>
+
+          <div className="transform-gpu group-hover:translate-z-10 transition-transform duration-300">
+            <h3 className="text-sm font-bold text-white tracking-tight group-hover:text-[#6C63FF] transition-colors duration-300">
+              {proj.title}
+            </h3>
+            <p className="text-xs text-gray-400 leading-relaxed mt-1.5">
+              {proj.description}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-6 pt-3 border-t border-white/[0.03] flex flex-wrap gap-1 font-mono text-[9px] font-semibold text-gray-400 relative z-10 pointer-events-none">
+          {Array.isArray(proj.tech) &&
+            proj.tech.map((t: string, i: number) => (
+              <span
+                key={i}
+                className="bg-white/[0.02] border border-white/5 px-2 py-0.5 rounded text-gray-300 group-hover:border-[#6C63FF]/15 transition-colors duration-300"
+              >
+                {t}
+              </span>
+            ))}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+// =========================================================
+// MAIN PORTFOLIO MODULE EXPORT
+// =========================================================
 export default function AuthenticStudentPortfolio() {
   const [showLoader, setShowLoader] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("journey");
   const [isNameHovered, setIsNameHovered] = useState(false);
 
-  // 1. STATE DRIVERS FOR DYNAMIC REPOSITORIES
   const [profile, setProfile] = useState<any>(null);
   const [journey, setJourney] = useState<any[]>([]);
   const [milestones, setMilestones] = useState<any[]>([]);
   const [techInventory, setTechInventory] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
 
-  // Form input bindings
   const [formState, setFormState] = useState({
     name: "",
     email: "",
@@ -68,18 +167,15 @@ export default function AuthenticStudentPortfolio() {
   });
   const [submitted, setSubmitted] = useState(false);
 
-  // 2. MAGNETIC ADVANCED CURSOR STATE CONFIGURATIONS
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
 
-  // Spring configurations for the delayed trailing outer ring element
   const trailingConfig = { stiffness: 250, damping: 24 };
   const cursorXSpring = useSpring(cursorX, trailingConfig);
   const cursorYSpring = useSpring(cursorY, trailingConfig);
 
   const [isHoveredClickable, setIsHoveredClickable] = useState(false);
 
-  // 3. ASYNC LIVE DATA STREAM FETCH LOOP
   useEffect(() => {
     setMounted(true);
 
@@ -126,7 +222,7 @@ export default function AuthenticStudentPortfolio() {
       cursorY.set(e.clientY);
       const target = e.target as HTMLElement;
       const isClickable = target.closest(
-        'a, button, [role="button"], input, textarea, .hover-trigger-name, json-node',
+        'a, button, [role="button"], input, textarea, .hover-trigger-name',
       );
       setIsHoveredClickable(!!isClickable);
     };
@@ -135,7 +231,6 @@ export default function AuthenticStudentPortfolio() {
     return () => window.removeEventListener("mousemove", moveCursor);
   }, []);
 
-  // 4. SECURE PAYLOAD HANDSHAKE TRANSMISSION
   const triggerSubmitHandshake = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formState.name || !formState.email || !formState.message) return;
@@ -164,7 +259,6 @@ export default function AuthenticStudentPortfolio() {
 
   if (!mounted) return <div className="min-h-screen bg-[#030712]" />;
 
-  // Dynamic fallback strings while resource loading completes
   const profileName = profile?.name || "Dhairya Agrawal";
   const profileBio = profile?.bio || "Loading ecosystem profiles...";
   const profileCollege = profile?.college || "Newton School of Technology";
@@ -173,21 +267,14 @@ export default function AuthenticStudentPortfolio() {
 
   return (
     <div className="min-h-screen bg-[#030712] text-white selection:bg-[#6C63FF]/30 overflow-x-hidden font-sans relative antialiased scroll-smooth">
-      {/* ========================================================= */}
-      {/* PREMIUM INDUSTRIAL DUAL CURSOR ANIMATION ENGINE           */}
-      {/* ========================================================= */}
-      {/* 1. Precise Core Point Dot (Instantaneous alignment) */}
+      {/* PRECISE CORE DOT */}
       <motion.div
         className="hidden md:block fixed top-0 left-0 w-2 h-2 rounded-full pointer-events-none z-[99999] bg-[#4FD1C5]"
-        style={{
-          x: cursorX,
-          y: cursorY,
-          transform: "translate(-50%, -50%)",
-        }}
+        style={{ x: cursorX, y: cursorY, transform: "translate(-50%, -50%)" }}
       />
-      {/* 2. Inertial Trailing Outer Ring (Delayed Spring Mechanics) */}
+      {/* INERTIAL TRAILING OUTER RING */}
       <motion.div
-        className="hidden md:block fixed top-0 left-0 rounded-full pointer-events-none z-[9999] border border-[#6C63FF]/60 bg-transparent mix-blend-screen"
+        className="hidden md:block fixed top-0 left-0 rounded-full pointer-events-none z-[999] border border-[#6C63FF]/60 bg-transparent mix-blend-screen"
         animate={{
           width: isHoveredClickable ? 52 : 28,
           height: isHoveredClickable ? 52 : 28,
@@ -209,7 +296,7 @@ export default function AuthenticStudentPortfolio() {
         }}
       />
 
-      {/* DYNAMIC CURSOR HOVER IMAGE WINDOW */}
+      {/* HOVER PHOTO ASSIST POPUP */}
       <AnimatePresence>
         {isNameHovered && (
           <motion.div
@@ -237,7 +324,7 @@ export default function AuthenticStudentPortfolio() {
         )}
       </AnimatePresence>
 
-      {/* INTRO GLITCH LOADER */}
+      {/* LOADING OVERLAY SCREEN */}
       <AnimatePresence>
         {showLoader && (
           <motion.div
@@ -265,13 +352,10 @@ export default function AuthenticStudentPortfolio() {
         )}
       </AnimatePresence>
 
-      {/* GRID VECTOR ACCENTS */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none z-0" />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-[600px] bg-gradient-to-b from-[#6C63FF]/15 via-[#4FD1C5]/5 to-transparent blur-[140px] pointer-events-none z-0" />
 
-      {/* ========================================================= */}
-      {/* FIXED LATERAL SOCIAL MEDIA DOCK (DESKTOP & LAPTOP FOCUS)  */}
-      {/* ========================================================= */}
+      {/* LATERAL SOCIAL MEDIA DECK */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -293,11 +377,10 @@ export default function AuthenticStudentPortfolio() {
             </a>
           ))}
         </div>
-        {/* Vector terminal alignment wire line */}
         <div className="w-[1px] h-24 bg-gradient-to-b from-white/20 to-transparent" />
       </motion.div>
 
-      {/* HEADER SECTION */}
+      {/* NAVBAR */}
       <nav className="fixed top-0 inset-x-0 h-16 bg-[#030712]/75 backdrop-blur-md border-b border-white/[0.04] z-50">
         <div className="max-w-5xl mx-auto h-full px-4 sm:px-6 flex items-center justify-between">
           <a href="#about" className="flex items-center gap-2 group">
@@ -322,7 +405,7 @@ export default function AuthenticStudentPortfolio() {
         </div>
       </nav>
 
-      {/* MAIN HERO LANDING PORT */}
+      {/* HERO SECTION */}
       <section
         id="about"
         className="pt-40 pb-20 px-4 max-w-4xl mx-auto text-center space-y-8 relative z-10 min-h-[90vh] flex flex-col justify-center items-center"
@@ -352,7 +435,6 @@ export default function AuthenticStudentPortfolio() {
           {profileBio}
         </p>
 
-        {/* Academic Card */}
         <div className="p-4 bg-[#090d16] border border-white/[0.04] rounded-xl text-left max-w-xl w-full flex items-start gap-3 shadow-xl">
           <div className="p-2 rounded-lg bg-[#4FD1C5]/10 text-[#4FD1C5] mt-0.5">
             <FiBookOpen size={15} />
@@ -373,7 +455,6 @@ export default function AuthenticStudentPortfolio() {
           </div>
         </div>
 
-        {/* Action Array Links Wrapper */}
         <div className="flex flex-col items-center gap-6 pt-2 w-full max-w-md">
           <a
             href="#dashboard"
@@ -386,9 +467,6 @@ export default function AuthenticStudentPortfolio() {
             />
           </a>
 
-          {/* ========================================================= */}
-          {/* RESPONSIVE SOCIAL BAR GRID NODE (IPAD & MOBILE VIEWS)      */}
-          {/* ========================================================= */}
           <div className="flex lg:hidden items-center justify-center gap-3 w-full px-4">
             {SOCIAL_LINKS.map((soc, idx) => (
               <a
@@ -408,7 +486,7 @@ export default function AuthenticStudentPortfolio() {
         </div>
       </section>
 
-      {/* DASHBOARD SECTIONS */}
+      {/* SYSTEM DASHBOARD TIMELINES */}
       <section
         id="dashboard"
         className="py-24 max-w-4xl mx-auto px-4 border-t border-white/[0.03] relative z-10"
@@ -505,10 +583,8 @@ export default function AuthenticStudentPortfolio() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
                 className="space-y-6 text-left max-w-3xl mx-auto"
               >
-                {/* DASHBOARD STATUS HEADER */}
                 <div className="flex justify-between items-center px-2 font-mono text-[10px] text-gray-500 uppercase tracking-widest">
                   <span>
                     // INVENTORY_LOGS // {techInventory.length} MODULES DETECTED
@@ -517,8 +593,6 @@ export default function AuthenticStudentPortfolio() {
                     SYSTEM_STABLE
                   </span>
                 </div>
-
-                {/* MODERN TWO-COLUMN INTERACTIVE SKILLS GRID */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {techInventory.map((skill, idx) => (
                     <motion.div
@@ -527,7 +601,6 @@ export default function AuthenticStudentPortfolio() {
                       className="bg-[#090d16] border border-white/[0.03] hover:border-[#6C63FF]/30 rounded-xl p-5 shadow-xl transition-all duration-300 relative overflow-hidden group flex flex-col justify-between"
                     >
                       <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#6C63FF]/5 to-transparent rounded-bl-full pointer-events-none group-hover:from-[#4FD1C5]/10 transition-all duration-500" />
-
                       <div className="space-y-3 relative z-10">
                         <div className="flex justify-between items-start gap-3">
                           <div className="space-y-1">
@@ -538,13 +611,11 @@ export default function AuthenticStudentPortfolio() {
                               {skill.name}
                             </h4>
                           </div>
-
                           <span className="text-[9px] font-mono font-black tracking-wide bg-white/[0.02] border border-white/5 group-hover:border-[#6C63FF]/20 text-gray-400 group-hover:text-[#818cf8] px-2 py-0.5 rounded transition-all duration-300 uppercase shrink-0">
                             {skill.status}
                           </span>
                         </div>
                       </div>
-
                       <div className="mt-5 space-y-1.5 relative z-10">
                         <div className="h-[5px] w-full bg-black/50 rounded-full overflow-hidden p-[1px] border border-white/[0.02]">
                           <motion.div
@@ -556,7 +627,6 @@ export default function AuthenticStudentPortfolio() {
                             <div className="absolute right-0 top-0 bottom-0 w-1 bg-white blur-[1px] animate-pulse" />
                           </motion.div>
                         </div>
-
                         <div className="flex justify-between items-center text-[9px] font-mono font-bold text-gray-600 group-hover:text-gray-400 transition-colors duration-300">
                           <span>BUFF_STATE: COMPILING</span>
                           <span className="text-[#4FD1C5]">
@@ -573,7 +643,7 @@ export default function AuthenticStudentPortfolio() {
         </div>
       </section>
 
-      {/* DYNAMIC CODE PROJECTS REPOSITORIES */}
+      {/* REPOSITORIES / CODE PROJ */}
       <section
         id="projects"
         className="py-24 max-w-5xl mx-auto px-4 border-t border-white/[0.03] relative z-10"
@@ -588,50 +658,12 @@ export default function AuthenticStudentPortfolio() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 text-left">
           {projects.map((proj, idx) => (
-            <div
-              key={proj.id || idx}
-              className="p-5 bg-[#090d16] border border-white/[0.04] hover:border-[#6C63FF]/40 rounded-xl flex flex-col justify-between transition-all group shadow-lg hover:-translate-y-1 relative overflow-hidden"
-            >
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="p-2 rounded-lg bg-white/[0.02] border border-white/5 text-gray-500 group-hover:text-[#4FD1C5] transition-all">
-                    <FiFolder size={15} />
-                  </div>
-                  <a
-                    href={proj.git_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-gray-500 hover:text-white transition-colors text-xs flex items-center gap-1 font-mono font-bold"
-                  >
-                    <FiGithub size={13} /> <span>Code Base</span>
-                  </a>
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-white tracking-tight group-hover:text-[#6C63FF] transition-colors">
-                    {proj.title}
-                  </h3>
-                  <p className="text-xs text-gray-400 leading-relaxed mt-1.5">
-                    {proj.description}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-6 pt-3 border-t border-white/[0.03] flex flex-wrap gap-1 font-mono text-[9px] font-semibold text-gray-400 relative z-10">
-                {Array.isArray(proj.tech) &&
-                  proj.tech.map((t: string, i: number) => (
-                    <span
-                      key={i}
-                      className="bg-white/[0.02] border border-white/5 px-2 py-0.5 rounded text-gray-300"
-                    >
-                      {t}
-                    </span>
-                  ))}
-              </div>
-            </div>
+            <ProjectCard key={proj.id || idx} proj={proj} idx={idx} />
           ))}
         </div>
       </section>
 
-      {/* CONTACT FORM */}
+      {/* CONTACT NODE */}
       <section
         id="contact"
         className="py-24 max-w-xl mx-auto px-4 border-t border-white/[0.03] relative z-10 text-center"
