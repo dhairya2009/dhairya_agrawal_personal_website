@@ -22,19 +22,20 @@ import {
   FiTwitter,
   FiInstagram,
   FiCheckCircle,
+  FiYoutube,
 } from "react-icons/fi";
 
 // Static definitions for your primary routing links
 const SOCIAL_LINKS = [
   {
     name: "GitHub",
-    url: "https://github.com/dhairya2009",
+    url: "https://github.com/dhairyaagrawalcode",
     icon: <FiGithub size={16} />,
     hoverColor: "hover:text-[#4FD1C5]",
   },
   {
     name: "LinkedIn",
-    url: "https://www.linkedin.com/in/dhairya-agarwal-566282211/",
+    url: "https://www.linkedin.com/in/dhairya-agrawal-102307341/",
     icon: <FiLinkedin size={16} />,
     hoverColor: "hover:text-[#6C63FF]",
   },
@@ -43,6 +44,18 @@ const SOCIAL_LINKS = [
     url: "https://www.instagram.com/dhairyaagrawal199/",
     icon: <FiInstagram size={16} />,
     hoverColor: "hover:text-[#f43f5e]",
+  },
+  {
+    name: "Twitter",
+    url: "https://x.com/dhairyaagr119",
+    icon: <FiTwitter size={16} />,
+    hoverColor: "hover:text-[#1DA1F2]",
+  },
+  {
+    name: "Youtube",
+    url: "https://www.youtube.com/@dhairyaagrawal119",
+    icon: <FiYoutube size={16} />,
+    hoverColor: "hover:text-[#FF0033]",
   },
 ];
 
