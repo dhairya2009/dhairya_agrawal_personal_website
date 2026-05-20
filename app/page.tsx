@@ -284,12 +284,12 @@ export default function page() {
       <Analytics />
       {/* PRECISE CORE DOT */}
       <motion.div
-        className="hidden md:block fixed top-0 left-0 w-2 h-2 rounded-full pointer-events-none z-[99999] bg-[#4FD1C5]"
+        className="hidden lg:block fixed top-0 left-0 w-2 h-2 rounded-full pointer-events-none z-[99999] bg-[#4FD1C5]"
         style={{ x: cursorX, y: cursorY, transform: "translate(-50%, -50%)" }}
       />
       {/* INERTIAL TRAILING OUTER RING */}
       <motion.div
-        className="hidden md:block fixed top-0 left-0 rounded-full pointer-events-none z-[999] border border-[#6C63FF]/60 bg-transparent mix-blend-screen"
+        className="hidden lg:block fixed top-0 left-0 rounded-full pointer-events-none z-[999] border border-[#6C63FF]/60 bg-transparent mix-blend-screen"
         animate={{
           width: isHoveredClickable ? 52 : 28,
           height: isHoveredClickable ? 52 : 28,
