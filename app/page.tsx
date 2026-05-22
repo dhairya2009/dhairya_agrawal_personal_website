@@ -9,7 +9,6 @@ import {
   AnimatePresence,
   useMotionValue,
   useSpring,
-  Variants,
 } from "framer-motion";
 import {
   FiArrowRight,
@@ -62,38 +61,6 @@ const SOCIAL_LINKS = [
   },
 ];
 
-// Reusable configurations for Scroll-triggered motion animation curves
-const scrollRevealVariants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: [0.215, 0.61, 0.355, 1] },
-  },
-};
-
-const staggeredContainerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.08,
-    },
-  },
-};
-
-const staggeredItemVariants = {
-  hidden: { opacity: 0, y: 16 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.4,
-      ease: [0, 0, 0.2, 1],
-    },
-  },
-};
-
 // =========================================================
 // NEW DETACHED HOOK SAFE COMPONENT FOR 3D CARDS
 // =========================================================
@@ -138,11 +105,7 @@ function ProjectCard({ proj, idx }: { proj: any; idx: number }) {
   const yRotSpring = useSpring(yRotate, springConfig);
 
   return (
-    <motion.div
-      style={{ perspective: 1000 }}
-      className="relative h-full"
-      variants={staggeredItemVariants}
-    >
+    <div style={{ perspective: 1000 }} className="relative">
       <motion.div
         onMouseMove={handleMouseTilt}
         onMouseLeave={handleMouseReset}
@@ -193,7 +156,7 @@ function ProjectCard({ proj, idx }: { proj: any; idx: number }) {
             ))}
         </div>
       </motion.div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -464,21 +427,11 @@ export default function page() {
         id="about"
         className="pt-40 pb-20 px-4 max-w-4xl mx-auto text-center space-y-8 relative z-10 min-h-[90vh] flex flex-col justify-center items-center"
       >
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="inline-flex items-center gap-2 px-3 py-1 bg-[#6C63FF]/10 border border-[#6C63FF]/20 rounded-full text-[10px] font-mono font-bold tracking-wider text-[#818cf8]"
-        >
+        <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#6C63FF]/10 border border-[#6C63FF]/20 rounded-full text-[10px] font-mono font-bold tracking-wider text-[#818cf8]">
           <FiTerminal size={11} /> Live Runtime Ecosystem Verified
-        </motion.div>
+        </div>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="text-4xl sm:text-6xl font-black tracking-tight leading-[1.05]"
-        >
+        <h1 className="text-4xl sm:text-6xl font-black tracking-tight leading-[1.05]">
           <span className="block">
             Hi, I'm{" "}
             <span
@@ -493,23 +446,13 @@ export default function page() {
           <span className="bg-gradient-to-r from-[#6C63FF] via-[#818cf8] to-[#4FD1C5] bg-clip-text text-transparent block mt-1">
             Exploring Code & Web Architecture.
           </span>
-        </motion.h1>
+        </h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="text-sm sm:text-base text-gray-400 leading-relaxed max-w-2xl font-normal"
-        >
+        <p className="text-sm sm:text-base text-gray-400 leading-relaxed max-w-2xl font-normal">
           {profileBio}
-        </motion.p>
+        </p>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-          className="p-4 bg-[#090d16] border border-white/[0.04] rounded-xl text-left max-w-xl w-full flex items-start gap-3 shadow-xl"
-        >
+        <div className="p-4 bg-[#090d16] border border-white/[0.04] rounded-xl text-left max-w-xl w-full flex items-start gap-3 shadow-xl">
           <div className="p-2 rounded-lg bg-[#4FD1C5]/10 text-[#4FD1C5] mt-0.5">
             <FiBookOpen size={15} />
           </div>
@@ -527,14 +470,9 @@ export default function page() {
               .
             </p>
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="flex flex-col items-center gap-6 pt-2 w-full max-w-md"
-        >
+        <div className="flex flex-col items-center gap-6 pt-2 w-full max-w-md">
           <a
             href="#dashboard"
             className="h-11 px-6 rounded-xl bg-[#6C63FF] text-white font-mono text-xs font-bold tracking-wide flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-[#6C63FF]/20 group"
@@ -559,15 +497,11 @@ export default function page() {
               </a>
             ))}
           </div>
-        </motion.div>
+        </div>
       </section>
 
       {/* SYSTEM DASHBOARD TIMELINES */}
-      <motion.section
-        variants={scrollRevealVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+      <section
         id="dashboard"
         className="py-24 max-w-4xl mx-auto px-4 border-t border-white/[0.03] relative z-10"
       >
@@ -596,14 +530,7 @@ export default function page() {
                 className="relative border-l border-white/10 ml-2 md:ml-28 space-y-6 text-left"
               >
                 {journey.map((node, idx) => (
-                  <motion.div
-                    key={node.id || idx}
-                    initial={{ opacity: 0, x: -12 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: idx * 0.05 }}
-                    className="relative pl-6 group"
-                  >
+                  <div key={node.id || idx} className="relative pl-6 group">
                     <div className="absolute -left-[5px] top-2.5 w-2.5 h-2.5 rounded-full bg-[#030712] border-2 border-[#6C63FF] group-hover:border-[#4FD1C5] transition-colors" />
                     <div className="md:absolute md:-left-32 md:top-1.5 md:w-24 text-left md:text-right text-[10px] font-mono font-bold text-[#4FD1C5] uppercase tracking-wider mb-1 md:mb-0">
                       {node.period}
@@ -622,7 +549,7 @@ export default function page() {
                         {node.description}
                       </p>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </motion.div>
             )}
@@ -630,16 +557,14 @@ export default function page() {
             {activeTab === "milestones" && (
               <motion.div
                 key="milestones"
-                variants={staggeredContainerVariants}
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-left"
               >
                 {milestones.map((mile, idx) => (
-                  <motion.div
+                  <div
                     key={mile.id || idx}
-                    variants={staggeredItemVariants}
                     className="p-5 bg-[#090d16] border border-white/[0.04] rounded-xl flex flex-col justify-between shadow-xl hover:-translate-y-1 group transition-all"
                   >
                     <div className="space-y-3">
@@ -661,7 +586,7 @@ export default function page() {
                     <div className="mt-4 pt-2.5 border-t border-white/[0.03] flex items-center gap-1.5 text-[11px] font-mono font-semibold text-amber-400">
                       <FiTrendingUp size={11} /> <span>{mile.award}</span>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </motion.div>
             )}
@@ -682,16 +607,10 @@ export default function page() {
                     SYSTEM_STABLE
                   </span>
                 </div>
-                <motion.div
-                  variants={staggeredContainerVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-                >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {techInventory.map((skill, idx) => (
                     <motion.div
                       key={skill.id || idx}
-                      variants={staggeredItemVariants}
                       whileHover={{ scale: 1.01, translateY: -2 }}
                       className="bg-[#090d16] border border-white/[0.03] hover:border-[#6C63FF]/30 rounded-xl p-5 shadow-xl transition-all duration-300 relative overflow-hidden group flex flex-col justify-between"
                     >
@@ -715,8 +634,7 @@ export default function page() {
                         <div className="h-[5px] w-full bg-black/50 rounded-full overflow-hidden p-[1px] border border-white/[0.02]">
                           <motion.div
                             initial={{ width: 0 }}
-                            whileInView={{ width: skill.bar_width }}
-                            viewport={{ once: true }}
+                            animate={{ width: skill.bar_width }}
                             transition={{ duration: 1.2, ease: "circOut" }}
                             className="h-full bg-gradient-to-r from-[#6C63FF] via-[#818cf8] to-[#4FD1C5] rounded-full relative"
                           >
@@ -732,19 +650,15 @@ export default function page() {
                       </div>
                     </motion.div>
                   ))}
-                </motion.div>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
-      </motion.section>
+      </section>
 
       {/* REPOSITORIES / CODE PROJ */}
-      <motion.section
-        variants={scrollRevealVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+      <section
         id="projects"
         className="py-24 max-w-5xl mx-auto px-4 border-t border-white/[0.03] relative z-10"
       >
@@ -756,25 +670,15 @@ export default function page() {
             Things I Have Coded
           </h2>
         </div>
-        <motion.div
-          variants={staggeredContainerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 text-left"
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 text-left">
           {projects.map((proj, idx) => (
             <ProjectCard key={proj.id || idx} proj={proj} idx={idx} />
           ))}
-        </motion.div>
-      </motion.section>
+        </div>
+      </section>
 
       {/* CONTACT NODE */}
-      <motion.section
-        variants={scrollRevealVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+      <section
         id="contact"
         className="py-24 max-w-xl mx-auto px-4 border-t border-white/[0.03] relative z-10 text-center"
       >
@@ -862,7 +766,7 @@ export default function page() {
             )}
           </AnimatePresence>
         </div>
-      </motion.section>
+      </section>
 
       {/* FOOTER */}
       <footer className="border-t border-white/[0.04] bg-[#030712] py-8 text-center relative z-10">
