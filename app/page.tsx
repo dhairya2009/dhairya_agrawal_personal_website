@@ -416,7 +416,7 @@ export default function page() {
           <div className="bg-white/[0.02] border border-white/5 px-3 py-1 rounded-lg hidden md:flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-[#4FD1C5] animate-pulse" />
             <span className="text-[10px] font-mono text-[#4FD1C5] font-bold uppercase tracking-wider">
-              COLLAGE START : {profileStart}
+              COLLEGE START : {profileStart}
             </span>
           </div>
         </div>
